@@ -1,0 +1,8 @@
+/build/
+/dist/
+/vendor/*.jar
+/tmp/
+*.log
+*.zip
+.idea/
+.vscode/

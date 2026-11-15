@@ -1,0 +1,14 @@
+{
+  "project": "Progressive S-Mods Arma Armatura Conflict Fix",
+  "baselineMod": "Progressive S-Mods",
+  "baselineVersion": "1.2.0",
+  "baselineBuildDate": "2025-06-04T08:21:28",
+  "baselineJarSha256": "A23E127E9F1258826449EDD11517914B1D163368F3A566C54A5BF0A15EDFCF77",
+  "deployedPatchedJarSha256": "06E3007937640F8EE89F305A7FA8ACF7CFA10A8FC8813A9DD796A9C18A0B8527",
+  "reproducibleOutputJarSha256Example": "DEF822597DE23F77936F2AF8FDD404E81D2311052C59BE3D3D14B9957A9EC598",
+  "javaTarget": 17,
+  "gameVersionAtAnalysis": "0.98a-RC8",
+  "affectedHull": "armaa_garegga_xiv_carrier_Hull",
+  "affectedHullMod": "armaa_comboUnit",
+  "persistentMemoryKey": "$selectedShip"
+}

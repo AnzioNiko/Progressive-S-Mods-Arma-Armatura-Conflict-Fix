@@ -1,0 +1,90 @@
+diff --git a/src/progsmod/data/campaign/LunaSModButton.java b/src/progsmod/data/campaign/LunaSModButton.java
+index 5f8817d..d8765d7 100644
+--- a/src/progsmod/data/campaign/LunaSModButton.java
++++ b/src/progsmod/data/campaign/LunaSModButton.java
+@@ -73,8 +73,6 @@ public class LunaSModButton extends BaseRefitButton {
+ 
+         if (!found) return;
+ 
+-        dialog.getInteractionTarget().getMemory()
+-                .set("$selectedShip", member);
+         PSM_BuildInHullMod.fromLunaButton = true;
+         PSM_BuildInHullMod.createPanel(member, variant, dialog, 0f, null, new Action() {
+             @Override
+diff --git a/src/progsmod/data/campaign/rulecmd/ui/plugins/ShipSelector.java b/src/progsmod/data/campaign/rulecmd/ui/plugins/ShipSelector.java
+index 58400e8..ca717f9 100644
+--- a/src/progsmod/data/campaign/rulecmd/ui/plugins/ShipSelector.java
++++ b/src/progsmod/data/campaign/rulecmd/ui/plugins/ShipSelector.java
+@@ -35,9 +35,7 @@ public class ShipSelector extends Selector<ShipButton> {
+         float scrollPanelY = scrollPanelAPI.getYOffset();
+         selectShip.callback.dismissCustomDialog(1);
+         FleetMemberAPI fleetMember = items.get(index).data.fleetMember;
+-        // Set $selectedShip, which is used by the console commands
+-        Global.getSector().getCampaignUI().getCurrentInteractionDialog().getInteractionTarget().getMemory()
+-                .set("$selectedShip", fleetMember);
++        // 不持久化完整 FleetMember；该引用会导致部分组合舰存档在读取时提前访问玩家舰队。
+         PSM_BuildInHullMod.fromLunaButton = false;
+         PSM_BuildInHullMod.createPanel(fleetMember, fleetMember.getVariant(), dialog, scrollPanelY, selectShip.callback, null);
+     }
+diff --git a/src/progsmod/plugin/ProgSMod.java b/src/progsmod/plugin/ProgSMod.java
+index a465bd5..9dd2c95 100644
+--- a/src/progsmod/plugin/ProgSMod.java
++++ b/src/progsmod/plugin/ProgSMod.java
+@@ -2,6 +2,10 @@ package progsmod.plugin;
+ 
+ import com.fs.starfarer.api.EveryFrameScript;
+ import com.fs.starfarer.api.Global;
++import com.fs.starfarer.api.campaign.CampaignFleetAPI;
++import com.fs.starfarer.api.campaign.LocationAPI;
++import com.fs.starfarer.api.campaign.SectorEntityToken;
++import com.fs.starfarer.api.campaign.StarSystemAPI;
+ import com.fs.starfarer.api.campaign.listeners.ListenerManagerAPI;
+ import com.fs.starfarer.api.loading.HullModSpecAPI;
+ import progsmod.data.campaign.EngagementListener;
+@@ -13,9 +17,12 @@ import java.lang.invoke.MethodHandles;
+ import java.lang.invoke.MethodType;
+ import java.net.URL;
+ import java.net.URLClassLoader;
++import java.util.List;
+ 
+ @SuppressWarnings("unused")
+ public class ProgSMod extends com.fs.starfarer.api.BaseModPlugin {
++    private static final String PERSISTENT_SELECTED_SHIP_KEY = "$selectedShip";
++
+     @Override
+     public void onApplicationLoad() {
+         SModUtils.loadConstants("progsmod_settings.json");
+@@ -46,6 +53,7 @@ public class ProgSMod extends com.fs.starfarer.api.BaseModPlugin {
+ 
+     @Override
+     public void onGameLoad(boolean newGame) {
++        clearPersistentSelectedShipMemory();
+         if (!SModUtils.Constants.DISABLE_MOD) {
+             SModUtils.loadData();
+             Global.getSettings().getHullModSpec("progsmod_xptracker").setHiddenEverywhere(false);
+@@ -70,6 +78,25 @@ public class ProgSMod extends com.fs.starfarer.api.BaseModPlugin {
+         }
+     }
+ 
++    private static void clearPersistentSelectedShipMemory() {
++        for (StarSystemAPI system : Global.getSector().getStarSystems()) {
++            clearLocation(system);
++        }
++        clearLocation(Global.getSector().getHyperspace());
++    }
++
++    @SuppressWarnings("unchecked")
++    private static void clearLocation(LocationAPI location) {
++        if (location == null) return;
++
++        for (SectorEntityToken entity : (List<SectorEntityToken>) location.getEntities(SectorEntityToken.class)) {
++            entity.getMemoryWithoutUpdate().unset(PERSISTENT_SELECTED_SHIP_KEY);
++        }
++        for (CampaignFleetAPI fleet : location.getFleets()) {
++            fleet.getMemoryWithoutUpdate().unset(PERSISTENT_SELECTED_SHIP_KEY);
++        }
++    }
++
+     private static final String[] reflectionWhitelist = new String[] {
+             "progsmod.data.campaign.RefitTabListenerAndScript",
+             "progsmod.util.ReflectionUtils"

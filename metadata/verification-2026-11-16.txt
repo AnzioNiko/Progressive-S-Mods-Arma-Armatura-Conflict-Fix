@@ -1,0 +1,43 @@
+验证日期：2026-11-16
+
+1. 2025 原版 JAR
+   SHA-256：A23E127E9F1258826449EDD11517914B1D163368F3A566C54A5BF0A15EDFCF77
+
+2. 已部署修补 JAR
+   SHA-256：06E3007937640F8EE89F305A7FA8ACF7CFA10A8FC8813A9DD796A9C18A0B8527
+
+3. 仓库重新构建输出
+   SHA-256：DEF822597DE23F77936F2AF8FDD404E81D2311052C59BE3D3D14B9957A9EC598
+   说明：完整 JAR 哈希会受条目时间戳影响，因此以类文件内容和脚本验证为准。
+
+4. 补丁校验
+   命令：git apply --reverse --check patches/progsmod-selected-ship-savefix.patch
+   结果：通过
+
+5. PowerShell 脚本解析
+   build.ps1：通过
+   apply-to-original-jar.ps1：通过
+   verify.ps1：通过
+
+6. 从 2025 原版重新构建
+   命令：scripts/build.ps1
+   结果：通过
+
+7. JAR 应用与结构验证
+   命令：scripts/apply-to-original-jar.ps1
+   命令：scripts/verify.ps1
+   结果：通过
+
+8. 类文件对照
+   以下类与已部署修补 JAR 中的类逐项 SHA-256 一致：
+   - progsmod/plugin/ProgSMod.class
+   - progsmod/data/campaign/LunaSModButton.class
+   - progsmod/data/campaign/LunaSModButton$1.class
+   - progsmod/data/campaign/rulecmd/ui/plugins/ShipSelector.class
+
+9. Java 运行时
+   已使用游戏自带 JRE 17 验证修改类可加载。
+
+10. 尚未自动执行
+    完整游戏内“购买舰船 -> 保存 -> 退出 -> 读取”闭环测试。
+    该测试应使用可丢弃存档，避免覆盖正式进度。
